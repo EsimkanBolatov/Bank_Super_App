@@ -69,3 +69,42 @@ async def get_my_accounts(
     result = await db.execute(query)
     accounts = result.scalars().all()
     return accounts
+
+
+@router.patch("/{account_id}/block")  # [cite: 88]
+async def block_account(
+        account_id: int,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    # Ищем счет и проверяем, что он принадлежит текущему юзеру
+    query = select(Account).where(Account.id == account_id, Account.user_id == current_user.id)
+    result = await db.execute(query)
+    account = result.scalar_one_or_none()
+
+    if not account:
+        raise HTTPException(status_code=404, detail="Счет не найден")
+
+    account.is_blocked = True  # [cite: 89]
+    await db.commit()
+
+    return {"status": "success", "message": "Карта заблокирована 🔒"}
+
+
+@router.patch("/{account_id}/unblock")  # [cite: 90]
+async def unblock_account(
+        account_id: int,
+        db: AsyncSession = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    query = select(Account).where(Account.id == account_id, Account.user_id == current_user.id)
+    result = await db.execute(query)
+    account = result.scalar_one_or_none()
+
+    if not account:
+        raise HTTPException(status_code=404, detail="Счет не найден")
+
+    account.is_blocked = False
+    await db.commit()
+
+    return {"status": "success", "message": "Карта разблокирована ✅"}

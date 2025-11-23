@@ -29,6 +29,9 @@ async def make_transfer(
     if not sender_account:
         raise HTTPException(status_code=400, detail="У вас нет активного счета для списания")
 
+    if sender_account.is_blocked:
+        raise HTTPException(status_code=403, detail="Карта заблокирована. Перевод невозможен.")  
+
     if sender_account.balance < transfer.amount:
         raise HTTPException(status_code=400, detail="Недостаточно средств")
 
