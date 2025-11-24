@@ -19,3 +19,8 @@ async def root():
         "status": "ok",
         "message": "Bank API is running"
     }
+
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="localhost", port=settings.PORT)
