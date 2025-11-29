@@ -154,8 +154,9 @@ propcache==0.4.1
 proto-plus==1.26.1
 protobuf==5.29.5
 psutil==6.1.1
-psycopg2==2.9.11
-psycopg2-binary==2.9.11
+#psycopg2==2.9.11
+#psycopg2-binary==2.9.11
+asyncpg==0.30.0
 pure_eval==0.2.3
 puremagic==1.30
 pyarrow==18.1.0
