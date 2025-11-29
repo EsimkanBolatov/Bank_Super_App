@@ -12,9 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-EXPOSE 8080
+EXPOSE 8000
 
-# Временное решение для теста
-CMD uvicorn app.main:app --host 0.0.0.0 --port 8080
-
-#CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port 8080"]
+## Временное решение для теста
+#CMD uvicorn app.main:app --host 0.0.0.0 --port 8080
+#
+##CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port 8080"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

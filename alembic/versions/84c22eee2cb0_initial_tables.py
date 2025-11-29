@@ -1,8 +1,8 @@
 """Initial tables
 
-Revision ID: 0ec7f6c93676
+Revision ID: 84c22eee2cb0
 Revises: 
-Create Date: 2025-11-23 13:53:53.687915
+Create Date: 2025-11-27 05:46:30.613861
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '0ec7f6c93676'
+revision: str = '84c22eee2cb0'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,6 +26,7 @@ def upgrade() -> None:
     sa.Column('phone', sa.String(), nullable=False),
     sa.Column('password_hash', sa.String(), nullable=False),
     sa.Column('full_name', sa.String(), nullable=True),
+    sa.Column('avatar_url', sa.String(), nullable=True),
     sa.Column('role', sa.Enum('USER', 'ADMIN', name='roleenum'), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
@@ -34,8 +35,8 @@ def upgrade() -> None:
     op.create_table('accounts',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('card_number', sa.String(length=16), nullable=False),
-    sa.Column('balance', sa.DECIMAL(precision=10, scale=2), nullable=True),
+    sa.Column('card_number', sa.String(length=30), nullable=False),
+    sa.Column('balance', sa.Numeric(precision=10, scale=2), nullable=True),
     sa.Column('currency', sa.Enum('KZT', 'USD', 'EUR', name='currencyenum'), nullable=True),
     sa.Column('is_blocked', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
@@ -46,10 +47,10 @@ def upgrade() -> None:
     op.create_table('transactions',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('from_account_id', sa.Integer(), nullable=True),
-    sa.Column('to_account_id', sa.Integer(), nullable=False),
-    sa.Column('amount', sa.DECIMAL(precision=10, scale=2), nullable=False),
+    sa.Column('to_account_id', sa.Integer(), nullable=True),
+    sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('category', sa.String(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.ForeignKeyConstraint(['from_account_id'], ['accounts.id'], ),
     sa.ForeignKeyConstraint(['to_account_id'], ['accounts.id'], ),
     sa.PrimaryKeyConstraint('id')

@@ -8,6 +8,10 @@ from app.db.models import Account, User, CurrencyEnum
 from app.dependencies import get_current_user
 from pydantic import BaseModel
 
+from decimal import Decimal
+from app.db.models import Transaction
+from datetime import datetime
+
 router = APIRouter(prefix="/accounts", tags=["Accounts"])
 
 
@@ -26,6 +30,10 @@ class AccountResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class DepositRequest(BaseModel):
+    card_number: str
+    amount: float
 
 def generate_card_number():
     """Генерирует случайный 16-значный номер, начинающийся с 4 (Visa)"""
@@ -108,3 +116,54 @@ async def unblock_account(
     await db.commit()
 
     return {"status": "success", "message": "Карта разблокирована ✅"}
+
+
+@router.post("/deposit")
+async def deposit_money(
+        deposit: DepositRequest,
+        db: AsyncSession = Depends(get_db),
+        # current_user: User = Depends(get_current_user) # Можно убрать, если хотим, чтобы это был "Публичный банкомат"
+):
+    """
+    Эмуляция пополнения через банкомат/терминал.
+    Не требует авторизации (или можно оставить, если нужно).
+    """
+    # 1. Ищем карту по номеру
+    query = select(Account).where(Account.card_number == deposit.card_number)
+    result = await db.execute(query)
+    account = result.scalar_one_or_none()
+
+    if not account:
+        raise HTTPException(status_code=404, detail="Карта не найдена")
+
+    if account.is_blocked:
+        raise HTTPException(status_code=400, detail="Карта заблокирована, пополнение невозможно")
+
+    # 2. Конвертируем сумму в Decimal (важно для денег!)
+    amount_decimal = Decimal(str(deposit.amount))
+
+    if amount_decimal <= 0:
+        raise HTTPException(status_code=400, detail="Сумма должна быть больше 0")
+
+    # 3. Зачисляем деньги
+    account.balance += amount_decimal
+
+    # 4. Создаем запись в истории (Транзакция)
+    # from_account_id=None означает, что деньги пришли "извне" (банкомат)
+    new_transaction = Transaction(
+        from_account_id=None,
+        to_account_id=account.id,
+        amount=amount_decimal,
+        category="ATM Deposit",  # Красивая категория для истории
+        created_at=datetime.utcnow()
+    )
+
+    db.add(new_transaction)
+    await db.commit()
+    await db.refresh(account)
+
+    return {
+        "status": "success",
+        "message": f"Зачислено {deposit.amount} {account.currency}",
+        "new_balance": account.balance
+    }
