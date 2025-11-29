@@ -164,6 +164,7 @@ pyasn1_modules==0.4.2
 pycparser==2.23
 pydantic==2.12.2
 pydantic_core==2.41.4
+pydantic-settings
 pydata-google-auth==1.9.1
 pydeck==0.9.1
 pydyf==0.11.0
