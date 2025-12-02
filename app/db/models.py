@@ -48,6 +48,19 @@ class Account(Base):
     incoming_transactions = relationship("Transaction", foreign_keys="Transaction.to_account_id",
                                          back_populates="to_account")
 
+class Transaction(Base):
+    __tablename__ = "transactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    from_account_id = Column(Integer, ForeignKey("accounts.id"), nullable=True)
+    to_account_id = Column(Integer, ForeignKey("accounts.id"), nullable=True)
+    amount = Column(Numeric(10, 2), nullable=False)
+    category = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Связи (Relationships)
+    from_account = relationship("Account", foreign_keys=[from_account_id], back_populates="outgoing_transactions")
+    to_account = relationship("Account", foreign_keys=[to_account_id], back_populates="incoming_transactions")
 
 class Loan(Base):  # <--- ТУТ БЫЛА ОШИБКА, НУЖНО Base
     __tablename__ = "loans"
