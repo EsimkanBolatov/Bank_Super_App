@@ -77,7 +77,7 @@ class Loan(Base):  # <--- ТУТ БЫЛА ОШИБКА, НУЖНО Base
     schedule = relationship("LoanSchedule", back_populates="loan")
 
 
-class LoanSchedule(Base):  # <--- И ТУТ ТОЖЕ Base
+class LoanSchedule(Base):  
     __tablename__ = "loan_schedules"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -87,3 +87,14 @@ class LoanSchedule(Base):  # <--- И ТУТ ТОЖЕ Base
     is_paid = Column(Boolean, default=False)
 
     loan = relationship("Loan", back_populates="schedule")
+
+class Favorite(Base):
+    __tablename__ = "favorites"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String, nullable=False)      # Имя (Мама, Аренда)
+    value = Column(String, nullable=False)     # Номер телефона или карты
+    type = Column(String, nullable=False)      # "phone" или "card"
+    color_start = Column(String, default="#4CAF50") # Для градиента
+    color_end = Column(String, default="#2E7D32")
